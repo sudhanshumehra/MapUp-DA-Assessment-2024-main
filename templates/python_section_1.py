@@ -1,21 +1,32 @@
 from typing import Dict, List
 
 import pandas as pd
-
+import re
+import numpy as np
 
 def reverse_by_n_elements(lst: List[int], n: int) -> List[int]:
     """
     Reverses the input list by groups of n elements.
     """
     # Your code goes here.
-    return lst
-
+    result= []
+    for i in range(0, len(lst), n):
+        item = lst[i : i+n]
+        for j in range(len(item) - 1, -1, -1):
+            result.append(item[j])
+    return result
 
 def group_by_length(lst: List[str]) -> Dict[int, List[str]]:
     """
     Groups the strings by their length and returns a dictionary.
     """
     # Your code here
+    dict = {}
+    for i in range(len(lst)):
+        key = len(lst[i])
+        if key not in dict:
+            dict[key] = []
+        dict[key].append(lst[i])
     return dict
 
 def flatten_dict(nested_dict: Dict, sep: str = '.') -> Dict:
@@ -27,7 +38,20 @@ def flatten_dict(nested_dict: Dict, sep: str = '.') -> Dict:
     :return: A flattened dictionary
     """
     # Your code here
-    return dict
+    def flatten(current_dict, parent_key = '') -> Dict:
+        items = []
+        if isinstance(current_dict, dict):
+            for k, v in current_dict.items():
+                new_key = f"{parent_key}{sep}{k}" if parent_key else k
+                items.extend(flatten(v, new_key).items())
+        elif isinstance(current_dict, list):
+            for i, v in enumerate(current_dict):
+                list_key = f"{parent_key}[{i}]"
+                items.extend(flatten(v, list_key).items())
+        else:
+            items.append((parent_key, current_dict))
+        return dict(items)
+    return flatten(nested_dict)
 
 def unique_permutations(nums: List[int]) -> List[List[int]]:
     """
@@ -37,8 +61,25 @@ def unique_permutations(nums: List[int]) -> List[List[int]]:
     :return: List of unique permutations
     """
     # Your code here
-    pass
+    permutation = []
+    used = [False] * len(nums)
+    nums.sort()  
 
+    def backtrack(current_permutation):
+        if len(current_permutation) == len(nums):
+            permutation.append(current_permutation[:])
+            return
+
+        for i in range(len(nums)):
+            if used[i] or (i > 0 and nums[i] == nums[i - 1] and not used[i - 1]):
+                continue
+            used[i] = True
+            current_permutation.append(nums[i]) 
+            backtrack(current_permutation)
+            used[i] = False
+            current_permutation.pop()
+    backtrack([])
+    return permutation
 
 def find_all_dates(text: str) -> List[str]:
     """
@@ -51,7 +92,16 @@ def find_all_dates(text: str) -> List[str]:
     Returns:
     List[str]: A list of valid dates in the formats specified.
     """
-    pass
+    date_patterns = [
+        r"\d{2}-\d{2}-\d{4}",  
+        r"\d{2}/\d{2}/\d{4}",  
+        r"\d{4}\.\d{2}\.\d{2}",  
+    ]
+    dates = []
+    for pattern in date_patterns:
+        for match in re.findall(pattern, text):
+            dates.append(match)
+    return dates
 
 def polyline_to_dataframe(polyline_str: str) -> pd.DataFrame:
     """
@@ -78,8 +128,21 @@ def rotate_and_multiply_matrix(matrix: List[List[int]]) -> List[List[int]]:
     - List[List[int]]: A new 2D list representing the transformed matrix.
     """
     # Your code here
-    return []
-
+    n = len(matrix)
+    rotated_matrix = [[0] * n for _ in range(n)]
+    
+    for i in range(n):
+        for j in range(n):
+            rotated_matrix[j][n-1-i] = matrix[i][j]
+    result_matrix = [[0] * n for _ in range(n)]
+    
+    for i in range(n):
+        for j in range(n):           
+            row_sum = sum(rotated_matrix[i]) - rotated_matrix[i][j]            
+            col_sum = sum(rotated_matrix[k][j] for k in range(n)) - rotated_matrix[i][j]
+            result_matrix[i][j] = row_sum + col_sum
+            
+    return result_matrix
 
 def time_check(df) -> pd.Series:
     """
